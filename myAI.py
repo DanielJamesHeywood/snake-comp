@@ -95,16 +95,13 @@ def tailIsReachable(state):
 
         for turn in Turn:
 
-            oldTail = state.snake.body[-1]
-
-            newState = state if turn == Turn.RIGHT else copyGameState(state)
+            newState = copyGameState(state)
             if not moveSnake(newState, turn):
                 continue
 
-            newTail = tail
-            if oldTail not in newTail:
-                newTail = newTail if turn == Turn.RIGHT else newTail.copy()
-                newTail.appendleft(oldTail)
+            newTail = tail.copy()
+            if state.snake.body[-1] not in newTail:
+                newTail.appendleft(state.snake.body[-1])
 
             if newState.snake.head in newTail:
                 return True
