@@ -1,4 +1,3 @@
-import random
 from collections import deque
 from snake.logic import GameState, Turn, Snake, Direction
 
