@@ -109,11 +109,11 @@ def tailIsReachable(state):
             if newState.snake.head in newTail:
                 return True
 
-            newDistanceToHead = getDistanceToNearestTarget(newState, set(newState.snake.body + newTail))
+            newDistanceToTail = getDistanceToNearestTarget(newState, set(newState.snake.body + newTail))
 
             insertIntoPriorityQueueForTailFinding(
                 priorityQueue,
-                (newState, newTail, newDistanceToHead)
+                (newState, newTail, newDistanceToTail)
             )
 
     return False
