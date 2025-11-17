@@ -89,7 +89,9 @@ def tailIsReachable(state):
         (state, state.snake.body, getDistanceToNearestTarget(state, set(state.snake.body)))
     )
 
-    while priorityQueue and len(priorityQueue) <= 32:
+    stateCount = 1
+
+    while priorityQueue and stateCount <= 32:
 
         state, tail, _ = priorityQueue.popleft()
 
@@ -111,6 +113,8 @@ def tailIsReachable(state):
                 priorityQueue,
                 (newState, newTail, newDistanceToTail)
             )
+            
+            stateCount += 1
 
     return False
 
