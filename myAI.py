@@ -97,7 +97,7 @@ def tailIsReachable(state):
 
     stateCount = 1
 
-    while priorityQueue and stateCount <= 32:
+    while priorityQueue and stateCount <= 64:
 
         state, tail, _ = priorityQueue.popleft()
 
