@@ -12,6 +12,8 @@ def myAI(state: GameState) -> Turn:
 
     turnWhereTailIsNotReachable = None
 
+    stateCount = 0
+
     for turn in Turn:
 
         newState = copyGameState(state)
@@ -27,6 +29,8 @@ def myAI(state: GameState) -> Turn:
                     priorityQueue,
                     (newState, turn, 1, newDistanceToNearestFood)
                 )
+                
+                stateCount += 1
 
         elif tailIsReachable(newState):
             return turn
@@ -34,7 +38,7 @@ def myAI(state: GameState) -> Turn:
         elif not turnWhereTailIsNotReachable:
             turnWhereTailIsNotReachable = turn
 
-    while priorityQueue:
+    while priorityQueue and stateCount <= 1000:
 
         state, turn, distance, _ = priorityQueue.popleft()
 
@@ -53,6 +57,8 @@ def myAI(state: GameState) -> Turn:
                         priorityQueue,
                         (newState, turn, distance + 1, newDistanceToNearestFood)
                     )
+                
+                    stateCount += 1
 
             elif tailIsReachable(newState):
                 return turn
