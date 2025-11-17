@@ -334,7 +334,7 @@ def moveAnySnake(state, snake, turn):
         return False
 
     for enemy in state.enemies:
-        if enemy is not snake and enemy.isAlive and nextHead in enemy.body:
+        if enemy.isAlive and enemy is not snake and nextHead in enemy.body:
             return False
 
     willEat = nextHead in state.food
