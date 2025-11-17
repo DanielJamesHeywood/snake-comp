@@ -273,9 +273,7 @@ def copyGameState(state):
         width = state.width,
         height = state.height,
         snake = copySnake(state.snake),
-        enemies = [
-            copySnake(enemy) for enemy in state.enemies
-        ],
+        enemies = [copySnake(enemy) for enemy in state.enemies],
         food = state.food,
         walls = state.walls,
         score = state.score
@@ -365,9 +363,7 @@ def getEnemyGameState(state, enemyIndex):
         width = state.width,
         height = state.height,
         snake = enemy,
-        enemies = [state.snake] + [
-            otherEnemy for otherEnemy in state.enemies if otherEnemy is not enemy and otherEnemy.isAlive
-        ],
+        enemies = [state.snake] + [otherEnemy for otherEnemy in state.enemies if otherEnemy is not enemy and otherEnemy.isAlive],
         food = state.food,
         walls = state.walls,
         score = enemy.score
