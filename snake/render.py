@@ -188,30 +188,48 @@ class SnakeRenderer:
         # Dark green frame background
         rl.clear_background(self.BG_FRAME)
 
-        # Light green game board
-        rl.draw_rectangle(
-            self.padding, self.padding, self.game_width, self.game_height, self.BG_BOARD
-        )
-
-        # Subtle checkerboard pattern
         for x in range(state.width):
             for y in range(state.height):
-                if (x + y) % 2 == 0:
+                position = (x, y)
+                if position in state.walls:
                     rl.draw_rectangle(
                         self.padding + x * self.cell_size,
                         self.padding + y * self.cell_size,
                         self.cell_size,
                         self.cell_size,
-                        self.CHECKER_LIGHT,
+                        self.WALL_COLOR
                     )
-
-        # Walls (dark green squares)
-        for x, y in state.walls:
-            wall_x = self.padding + x * self.cell_size
-            wall_y = self.padding + y * self.cell_size
-            rl.draw_rectangle(
-                wall_x, wall_y, self.cell_size, self.cell_size, self.WALL_COLOR
-            )
+                else:
+                    from myAI import getDistanceToNearestTarget
+                    distanceToPosition = getDistanceToNearestTarget(state, {position})
+                    rl.draw_rectangle(
+                        self.padding + x * self.cell_size,
+                        self.padding + y * self.cell_size,
+                        self.cell_size,
+                        self.cell_size,
+                        rl.Color(
+                            87 + ((162 - 87) * (21 - min(21, distanceToPosition))) // 21,
+                            138 + ((209 - 138) * (21 - min(21, distanceToPosition))) // 21,
+                            52 + ((73 - 52) * (21 - min(21, distanceToPosition))) // 21,
+                            255
+                        )
+                    )
+                    drawText = True
+                    if position in state.food:
+                        drawText = False
+                    if position in state.snake.body:
+                        drawText = False
+                    for enemy in state.enemies:
+                        if position in enemy.body:
+                            drawText = False
+                    if drawText:
+                        rl.draw_text(
+                            f"{distanceToPosition}",
+                            self.padding + x * self.cell_size + (self.cell_size - rl.measure_text(f"{distanceToPosition}", 36)) // 2,
+                            self.padding + y * self.cell_size + (self.cell_size - 36) // 2,
+                            36,
+                            self.BG_BOARD
+                        )
 
         # Food (apples with details)
         for fx, fy in state.food:
