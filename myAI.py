@@ -6,8 +6,6 @@ from examples.smartAI import smartAI as enemyAI
 
 
 def myAI(state: GameState) -> Turn:
-    
-    score = state.score
 
     priorityQueue = deque()
 
@@ -21,7 +19,7 @@ def myAI(state: GameState) -> Turn:
         if not moveSnake(newState, turn):
             continue
 
-        if newState.score <= score:
+        if newState.score <= state.score:
 
             newDistanceToNearestFood = getDistanceToNearestFood(newState)
             if newDistanceToNearestFood:
@@ -50,11 +48,11 @@ def myAI(state: GameState) -> Turn:
 
         for newTurn in Turn:
 
-            newState = state if newTurn == Turn.RIGHT else copyGameState(state)
+            newState = copyGameState(state)
             if not moveSnake(newState, newTurn):
                 continue
 
-            if newState.score <= score:
+            if newState.score <= state.score:
 
                 newDistanceToNearestFood = getDistanceToNearestFood(newState)
                 if newDistanceToNearestFood:
