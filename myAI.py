@@ -86,7 +86,7 @@ def tailIsReachable(state):
     priorityQueue = deque()
     insertIntoPriorityQueueForTailFinding(
         priorityQueue,
-        (state, deque(), getDistanceToNearestTarget(state, set(state.snake.body)))
+        (state, state.snake.body, getDistanceToNearestTarget(state, set(state.snake.body)))
     )
 
     while priorityQueue and len(priorityQueue) <= 32:
@@ -100,13 +100,12 @@ def tailIsReachable(state):
                 continue
 
             newTail = tail.copy()
-            if state.snake.body[-1] not in newTail:
-                newTail.appendleft(state.snake.body[-1])
+            newTail.appendleft(state.snake.head)
 
             if newState.snake.head in newTail:
                 return True
 
-            newDistanceToTail = getDistanceToNearestTarget(newState, set(newState.snake.body + newTail))
+            newDistanceToTail = getDistanceToNearestTarget(newState, set(newTail))
 
             insertIntoPriorityQueueForTailFinding(
                 priorityQueue,
