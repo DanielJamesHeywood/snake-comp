@@ -13,6 +13,8 @@ def myAI(state: GameState) -> Turn:
 
     turnWhereTailIsReachable = None
 
+    stateCount = 0
+
     for turn in Turn:
 
         newState = copyGameState(state)
@@ -30,6 +32,8 @@ def myAI(state: GameState) -> Turn:
                 )
 
                 turnCounts[turn] += 1
+                
+                stateCount += 1
 
         elif tailIsReachable(newState):
             return turn
@@ -40,7 +44,7 @@ def myAI(state: GameState) -> Turn:
     if not any(turnCounts.values()):
         return Turn.STRAIGHT
 
-    while (any(turnCounts[turn] for turn in Turn if turn != turnWhereTailIsReachable) if turnWhereTailIsReachable else len(list(filter(None, turnCounts.values()))) >= 2) and len(priorityQueue) <= 256:
+    while (any(turnCounts[turn] for turn in Turn if turn != turnWhereTailIsReachable) if turnWhereTailIsReachable else len(list(filter(None, turnCounts.values()))) >= 2) and stateCount <= 256:
 
         state, turn, distance, _ = priorityQueue.popleft()
 
@@ -63,6 +67,8 @@ def myAI(state: GameState) -> Turn:
                     )
 
                     turnCounts[turn] += 1
+                    
+                    stateCount += 1
 
             elif tailIsReachable(newState):
                 return turn
