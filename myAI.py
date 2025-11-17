@@ -48,8 +48,6 @@ def myAI(state: GameState) -> Turn:
 
         turnCounts[turn] -= 1
 
-        newDistance = distance + 1
-
         for newTurn in Turn:
 
             newState = state if newTurn == Turn.RIGHT else copyGameState(state)
@@ -63,7 +61,7 @@ def myAI(state: GameState) -> Turn:
 
                     insertIntoPriorityQueueForFoodFinding(
                         priorityQueue,
-                        (newState, turn, newDistance, newDistanceToNearestFood)
+                        (newState, turn, distance + 1, newDistanceToNearestFood)
                     )
 
                     turnCounts[turn] += 1
