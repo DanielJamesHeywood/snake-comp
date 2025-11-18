@@ -353,7 +353,89 @@ def moveAnySnake(state, snake, turn):
         if snake is state.snake:
             state.score += 1
 
+        spawnWall(state)
+
     return True
+
+
+def spawnWall(state):
+    
+    if len(state.walls) >= state.width * state.height * 0.25:
+        return
+
+    candidates = getEmptyCells(state) - self.invalid_wall_cache
+    if not candidates:
+        return
+
+    pos = random.choice(list(candidates))
+    self.walls.add(pos)
+
+    # checks if any adjacent cell would have 3+ walls
+    for n in [(pos[0] + d[0], pos[1] + d[1]) for d in DIRECTIONS]:
+        if 0 <= n[0] < self.width and 0 <= n[1] < self.height and n not in self.walls:
+            wall_count = sum(1 for nn in [(n[0] + d[0], n[1] + d[1]) for d in DIRECTIONS] if nn in self.walls or not ( 0 <= nn[0] < self.width and 0 <= nn[1] < self.height))
+            if wall_count >= 3:
+                self.walls.remove(pos)
+                self.invalid_wall_cache.add(pos)
+                return
+
+    # finds connected wall cluster
+    cluster = {pos}
+    queue = deque([pos])
+    while queue:
+        p = queue.popleft()
+        for dx, dy in [(0, 1), (0, -1), (1, 0), (-1, 0), (1, 1), (1, -1), (-1, 1), (-1, -1)]:
+            np = (p[0] + dx, p[1] + dy)
+            if np in self.walls and np not in cluster:
+                cluster.add(np)
+                queue.append(np)
+
+    # checks border touches
+    borders = set()
+    for x, y in cluster:
+        if x == 0:
+            borders.add("L")
+        if x == self.width - 1:
+            borders.add("R")
+        if y == 0:
+            borders.add("T")
+        if y == self.height - 1:
+            borders.add("B")
+
+    # invalid if touches 2+ borders
+    if len(borders) >= 2:
+        self.walls.remove(pos)
+        self.invalid_wall_cache.add(pos)
+        return
+
+    # adds buffer zone around border-touching clusters
+    if borders:
+        for wx, wy in cluster:
+            for dx in range(-2, 3):
+                for dy in range(-2, 3):
+                    if abs(dx) + abs(dy) <= 2:
+                        p = (wx + dx, wy + dy)
+                        if 0 <= p[0] < self.width and 0 <= p[1] < self.height and p not in self.walls:
+                            self.invalid_wall_cache.add(p)
+
+        # checks for nearby border walls not in cluster
+        for wx, wy in cluster:
+            for dx in range(-2, 3):
+                for dy in range(-2, 3):
+                    if dx == dy == 0:
+                        continue
+                    p = (wx + dx, wy + dy)
+                    if p in self.walls and p not in cluster:
+                        if p[0] in [0, self.width - 1] or p[1] in [0, self.height - 1]:
+                            self.walls.remove(pos)
+                            self.invalid_wall_cache.add(pos)
+                            return
+
+    # checks if wall has 3+ neighbors
+    if len(self.walls) > 4:
+        if sum(1 for n in [(pos[0] + xOffset, pos[1] + yOffset) for xOffset, yOffset in DIRECTIONS] if n in self.walls) >= 3:
+            self.walls.remove(pos)
+            self.invalid_wall_cache.add(pos)
 
 
 def getEmptyCells(state):
