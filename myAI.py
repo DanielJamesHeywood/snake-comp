@@ -356,6 +356,22 @@ def moveAnySnake(state, snake, turn):
     return True
 
 
+def getEmptyCells(state):
+
+    cells = {(x, y) for x in range(state.width) for y in range(state.height)}
+
+    cells -= state.walls
+    cells -= state.food
+
+    cells -= state.snake.body_set
+
+    for enemy in state.enemies:
+        if enemy.isAlive:
+            cells -= enemy.body_set
+
+    return cells
+
+
 def getEnemyGameState(state, enemyIndex):
 
     enemy = state.enemies[enemyIndex]
