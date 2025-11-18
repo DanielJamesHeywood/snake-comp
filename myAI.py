@@ -432,7 +432,8 @@ def spawnWall(state):
                             return
 
     # checks if wall has 3+ neighbors
-    if sum(1 for n in [(pos[0] + xOffset, pos[1] + yOffset) for xOffset, yOffset in DIRECTIONS] if n in self.walls) >= 3:
+    x, y = pos
+    if sum(1 for n in [(x + xOffset, y + yOffset) for xOffset, yOffset in DIRECTIONS] if n in self.walls) >= 3:
         self.walls.remove(pos)
         self.invalid_wall_cache.add(pos)
 
