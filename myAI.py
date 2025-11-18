@@ -363,11 +363,13 @@ def getEmptyCells(state):
     cells -= state.walls
     cells -= state.food
 
-    cells -= state.snake.body_set
+    for position in state.snake.body:
+        cells.discard(position)
 
     for enemy in state.enemies:
         if enemy.isAlive:
-            cells -= enemy.body_set
+            for position in enemy.body:
+                cells.discard(position)
 
     return cells
 
