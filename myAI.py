@@ -371,9 +371,9 @@ def spawnWall(state):
     self.walls.add(pos)
 
     # checks if any adjacent cell would have 3+ walls
-    for n in [(pos[0] + d[0], pos[1] + d[1]) for d in DIRECTIONS]:
+    for n in [(pos[0] + xOffset, pos[1] + yOffset) for xOffset, yOffset  in DIRECTIONS]:
         if 0 <= n[0] < self.width and 0 <= n[1] < self.height and n not in self.walls:
-            wall_count = sum(1 for nn in [(n[0] + d[0], n[1] + d[1]) for d in DIRECTIONS] if nn in self.walls or not ( 0 <= nn[0] < self.width and 0 <= nn[1] < self.height))
+            wall_count = sum(1 for nn in [(n[0] + xOffset, n[1] + yOffset) for xOffset, yOffset in DIRECTIONS] if nn in self.walls or not ( 0 <= nn[0] < self.width and 0 <= nn[1] < self.height))
             if wall_count >= 3:
                 self.walls.remove(pos)
                 self.invalid_wall_cache.add(pos)
