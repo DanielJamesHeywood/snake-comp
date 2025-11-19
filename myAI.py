@@ -363,21 +363,34 @@ def spawnWall(state):
     if len(state.walls) >= state.width * state.height * 0.25:
         return
 
-    candidates = getEmptyCells(state) - self.invalid_wall_cache
+    candidates = getEmptyCells(state)
+
     if not candidates:
         return
 
+    for x in range(state.width):
+        for y in range(state.height):
+            position = (x, y)
+            if position in state.walls:
+                continue
+
+            nonWallNeighbours = set()
+
+            for xOffset, yOffset in DIRECTIONS:
+                neighbourX, neighbourY = x + xOffset, y + yOffset
+                if not (0 <= neighbourX < state.width and 0 <= neighbourY < state.height):
+                    continue
+                neighbour = (neighbourX, neighbourY)
+                if neighbour in state.walls:
+                    continue
+                
+                nonWallNeighbours.add(neighbour)
+
+            if len(nonWallNeighbours) <= 2:
+                candidates -= nonWallNeighbours
+
     pos = random.choice(list(candidates))
     self.walls.add(pos)
-
-    # checks if any adjacent cell would have 3+ walls
-    for n in [(pos[0] + xOffset, pos[1] + yOffset) for xOffset, yOffset  in DIRECTIONS]:
-        if 0 <= n[0] < self.width and 0 <= n[1] < self.height and n not in self.walls:
-            wall_count = sum(1 for nn in [(n[0] + xOffset, n[1] + yOffset) for xOffset, yOffset in DIRECTIONS] if nn in self.walls or not ( 0 <= nn[0] < self.width and 0 <= nn[1] < self.height))
-            if wall_count >= 3:
-                self.walls.remove(pos)
-                self.invalid_wall_cache.add(pos)
-                return
 
     # finds connected wall cluster
     cluster = {pos}
@@ -430,7 +443,7 @@ def spawnWall(state):
                             self.walls.remove(pos)
                             self.invalid_wall_cache.add(pos)
                             return
-
+        
     # checks if wall has 3+ neighbors
     x, y = pos
     if len([position for position in [(x + xOffset, y + yOffset) for xOffset, yOffset in DIRECTIONS] if position in state.walls]) >= 3:
