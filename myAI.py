@@ -386,60 +386,15 @@ def spawnWall(state):
             if len(nonWallNeighbours) <= 2:
                 candidates -= nonWallNeighbours
 
-    pos = random.choice(list(candidates))
-    self.walls.add(pos)
-
-    # finds connected wall cluster
-    cluster = {pos}
-    queue = deque([pos])
-    while queue:
-        p = queue.popleft()
-        for dx, dy in [(0, 1), (0, -1), (1, 0), (-1, 0), (1, 1), (1, -1), (-1, 1), (-1, -1)]:
-            np = (p[0] + dx, p[1] + dy)
-            if np in self.walls and np not in cluster:
-                cluster.add(np)
-                queue.append(np)
-
-    # checks border touches
-    borders = set()
-    for x, y in cluster:
-        if x == 0:
-            borders.add("L")
-        if x == self.width - 1:
-            borders.add("R")
-        if y == 0:
-            borders.add("T")
-        if y == self.height - 1:
-            borders.add("B")
-
-    # invalid if touches 2+ borders
-    if len(borders) >= 2:
-        self.walls.remove(pos)
-        self.invalid_wall_cache.add(pos)
-        return
-
-    # adds buffer zone around border-touching clusters
-    if borders:
-        for wx, wy in cluster:
-            for dx in range(-2, 3):
-                for dy in range(-2, 3):
-                    if abs(dx) + abs(dy) <= 2:
-                        p = (wx + dx, wy + dy)
-                        if 0 <= p[0] < self.width and 0 <= p[1] < self.height and p not in self.walls:
-                            self.invalid_wall_cache.add(p)
-
-        # checks for nearby border walls not in cluster
-        for wx, wy in cluster:
-            for dx in range(-2, 3):
-                for dy in range(-2, 3):
-                    if dx == dy == 0:
-                        continue
-                    p = (wx + dx, wy + dy)
-                    if p in self.walls and p not in cluster:
-                        if p[0] in [0, self.width - 1] or p[1] in [0, self.height - 1]:
-                            self.walls.remove(pos)
-                            self.invalid_wall_cache.add(pos)
-                            return
+    _candidate = None
+    _distanceToTail = None
+    for candidate in candidates:
+        state.walls.add(candidate)
+        __distanceToTail = getDistanceToNearestTarget(state, set(state.snake.body))
+        if not _candidate or __distanceToTail > _distanceToTail:
+            _candidate = candidate
+        state.walls.remove(candidate)
+    state.walls.add(candidate)
 
 
 def getEmptyCells(state):
