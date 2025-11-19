@@ -393,6 +393,7 @@ def spawnWall(state):
         __distanceToTail = getDistanceToNearestTarget(state, set(state.snake.body))
         if not _candidate or __distanceToTail > _distanceToTail:
             _candidate = candidate
+            _distanceToTail = __distanceToTail
         state.walls.remove(candidate)
     state.walls.add(candidate)
 
