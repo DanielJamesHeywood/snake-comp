@@ -443,12 +443,6 @@ def spawnWall(state):
                             self.walls.remove(pos)
                             self.invalid_wall_cache.add(pos)
                             return
-        
-    # checks if wall has 3+ neighbors
-    x, y = pos
-    if len([position for position in [(x + xOffset, y + yOffset) for xOffset, yOffset in DIRECTIONS] if position in state.walls]) >= 3:
-        self.walls.remove(pos)
-        self.invalid_wall_cache.add(pos)
 
 
 def getEmptyCells(state):
