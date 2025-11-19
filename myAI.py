@@ -365,9 +365,6 @@ def spawnWall(state):
 
     candidates = getEmptyCells(state)
 
-    if not candidates:
-        return
-
     for x in range(state.width):
         for y in range(state.height):
             position = (x, y)
