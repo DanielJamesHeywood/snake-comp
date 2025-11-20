@@ -125,8 +125,8 @@ def tailIsReachable(state):
     return False
 
 
-def getDistanceToNearestFood(state):
-    return getDistanceToNearestTarget(state, state.food)
+def getDistanceToNearestFood(state, minimumDistancesToCellsInBodies = None):
+    return getDistanceToNearestTarget(state, state.food, minimumDistancesToCellsInBodies = minimumDistancesToCellsInBodies)
 
 
 def getDistanceToNearestTarget(state, targets, minimumDistancesToCellsInBodies = None):
