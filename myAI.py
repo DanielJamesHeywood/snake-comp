@@ -199,7 +199,7 @@ def getDistanceToNearestTarget(state, targets, minimumDistancesToCellsInBodies =
     return None
 
 
-def get(state, targets, minimumDistancesToCellsInBodies = None):
+def getCellsVisitedBeforeNearestTarget(state, targets, minimumDistancesToCellsInBodies = None):
 
     x, y = state.snake.head
 
@@ -450,7 +450,7 @@ def spawnWall(state):
     tail = state.snake.body_set
     minimumDistancesToCellsInBodies = getMinimumDistancesToCellsInBodies(state)
     
-    candidates = get(state, tail, minimumDistancesToCellsInBodies = minimumDistancesToCellsInBodies)
+    candidates = getCellsVisitedBeforeNearestTarget(state, tail, minimumDistancesToCellsInBodies = minimumDistancesToCellsInBodies)
     
     candidates -= state.food
 
