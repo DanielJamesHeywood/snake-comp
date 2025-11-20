@@ -199,7 +199,7 @@ def getDistanceToNearestTarget(state, targets, minimumDistancesToCellsInBodies =
     return None
 
 
-def f(state, targets, minimumDistancesToCellsInBodies = None):
+def get(state, targets, minimumDistancesToCellsInBodies = None):
 
     x, y = state.snake.head
 
@@ -240,6 +240,8 @@ def f(state, targets, minimumDistancesToCellsInBodies = None):
         position, distance = priorityQueue.popleft()
 
         if position in targets:
+            for position, _ in priorityQueue:
+                visited.remove(position)
             return visited
 
         x, y = position
@@ -266,7 +268,7 @@ def f(state, targets, minimumDistancesToCellsInBodies = None):
 
             visited.add(newPosition)
 
-    return visited
+    return None
 
 
 def getMinimumDistancesToCellsInBodies(state):
@@ -446,7 +448,7 @@ def spawnWall(state):
     tail = state.snake.body_set
     minimumDistancesToCellsInBodies = getMinimumDistancesToCellsInBodies(state)
     
-    candidates = f(state, tail, minimumDistancesToCellsInBodies = minimumDistancesToCellsInBodies)
+    candidates = get(state, tail, minimumDistancesToCellsInBodies = minimumDistancesToCellsInBodies)
     
     candidates -= state.food
 
