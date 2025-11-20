@@ -129,11 +129,12 @@ def getDistanceToNearestFood(state):
     return getDistanceToNearestTarget(state, state.food)
 
 
-def getDistanceToNearestTarget(state, targets):
+def getDistanceToNearestTarget(state, targets, minimumDistancesToCellsInBodies = None):
 
     x, y = state.snake.head
 
-    minimumDistancesToCellsInBodies = getMinimumDistancesToCellsInBodies(state)
+    if not minimumDistancesToCellsInBodies:
+        minimumDistancesToCellsInBodies = getMinimumDistancesToCellsInBodies(state)
 
     priorityQueue = deque()
     insertIntoPriorityQueueForDistanceFinding(
