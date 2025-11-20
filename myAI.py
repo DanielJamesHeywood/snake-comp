@@ -447,6 +447,16 @@ def spawnWall(state):
     minimumDistancesToCellsInBodies = getMinimumDistancesToCellsInBodies(state)
     
     candidates = f(state, tail, minimumDistancesToCellsInBodies = minimumDistancesToCellsInBodies)
+    
+    candidates -= state.food
+
+    for position in state.snake.body:
+        candidates.discard(position)
+
+    for enemy in state.enemies:
+        if enemy.isAlive:
+            for position in enemy.body:
+                candidates.discard(position)
 
     for x in range(state.width):
         for y in range(state.height):
