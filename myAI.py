@@ -240,8 +240,10 @@ def get(state, targets, minimumDistancesToCellsInBodies = None):
         position, distance = priorityQueue.popleft()
 
         if position in targets:
+            
             for position, _ in priorityQueue:
                 visited.remove(position)
+
             return visited
 
         x, y = position
