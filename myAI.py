@@ -11,7 +11,7 @@ def myAI(state: GameState) -> Turn:
 
     turnCounts = {turn: 0 for turn in Turn}
 
-    turnWhereTailIsReachable = None
+    turnWhereTailIsNotReachable = None
 
     stateCount = 0
 
@@ -39,16 +39,20 @@ def myAI(state: GameState) -> Turn:
             return turn
             
         else:
-            turnWhereTailIsReachable = turn
+            turnWhereTailIsNotReachable = turn
 
     if not any(turnCounts.values()):
+
+        if turnWhereTailIsNotReachable:
+            return turnWhereTailIsNotReachable
+
         return Turn.STRAIGHT
 
     while (
-        any(turnCounts[turn] for turn in Turn if turn != turnWhereTailIsReachable)
-        if turnWhereTailIsReachable else
+        any(turnCounts[turn] for turn in Turn if turn != turnWhereTailIsNotReachable)
+        if turnWhereTailIsNotReachable else
         len([turnCount for turnCount in turnCounts.values() if turnCount != 0]) >= 2
-    ) and stateCount <= 512:
+    ) and stateCount <= 256:
 
         state, turn, distance, _ = priorityQueue.popleft()
 
@@ -78,10 +82,10 @@ def myAI(state: GameState) -> Turn:
                 return turn
             
             else:
-                turnWhereTailIsReachable = turn
+                turnWhereTailIsNotReachable = turn
 
-    if turnWhereTailIsReachable:
-        return turnWhereTailIsReachable
+    if turnWhereTailIsNotReachable:
+        return turnWhereTailIsNotReachable
 
     _, turn, _, _ = priorityQueue.popleft()
     return turn
@@ -125,16 +129,35 @@ def tailIsReachable(state):
     return False
 
 
-def getDistanceToNearestFood(state, minimumDistancesToCellsInBodies = None):
-    return getDistanceToNearestTarget(state, state.food, minimumDistancesToCellsInBodies = minimumDistancesToCellsInBodies)
+def getDistanceToNearestFood(state):
+    return getDistanceToNearestTarget(state, state.food)
 
 
-def getDistanceToNearestTarget(state, targets, minimumDistancesToCellsInBodies = None):
+def getDistanceToNearestTarget(state, targets):
 
     x, y = state.snake.head
 
-    if not minimumDistancesToCellsInBodies:
-        minimumDistancesToCellsInBodies = getMinimumDistancesToCellsInBodies(state)
+    minimumDistancesToCellsInBodies = {}
+
+    minimumDistanceToHead = len(state.snake.body)
+
+    if minimumDistanceToHead % 2 != 0:
+        minimumDistanceToHead += 1
+
+    for index, position in enumerate(state.snake.body):
+        minimumDistancesToCellsInBodies[position] = minimumDistanceToHead - index
+
+    for enemy in state.enemies:
+        if enemy.isAlive:
+
+            minimumDistanceToHead = len(enemy.body) + 1
+
+            enemyX, enemyY = enemy.head
+            if minimumDistanceToHead % 2 != (abs(x - enemyX) + abs(y - enemyY)) % 2:
+                minimumDistanceToHead += 1
+
+            for index, position in enumerate(enemy.body):
+                minimumDistancesToCellsInBodies[position] = minimumDistanceToHead - index
 
     priorityQueue = deque()
     insertIntoPriorityQueueForDistanceFinding(
@@ -197,109 +220,6 @@ def getDistanceToNearestTarget(state, targets, minimumDistancesToCellsInBodies =
             visited.add(newPosition)
 
     return None
-
-
-def getCellsVisitedBeforeNearestTarget(state, targets, minimumDistancesToCellsInBodies = None):
-
-    x, y = state.snake.head
-
-    if not minimumDistancesToCellsInBodies:
-        minimumDistancesToCellsInBodies = getMinimumDistancesToCellsInBodies(state)
-
-    priorityQueue = deque()
-    insertIntoPriorityQueueForDistanceFinding(
-        priorityQueue,
-        (state.snake.head, minimumDistancesToCellsInBodies[state.snake.head])
-    )
-
-    visited = {state.snake.head}
-
-    for turn in Turn:
-        xOffset, yOffset = DIRECTIONS[(state.snake.direction + turn.value) % 4]
-        newX, newY = x + xOffset, y + yOffset
-        if not (0 <= newX < state.width and 0 <= newY < state.height):
-            continue
-        newPosition = (newX, newY)
-        if newPosition in state.walls:
-            continue
-    
-        newDistance = 1
-
-        if newPosition in minimumDistancesToCellsInBodies:
-            newDistance = minimumDistancesToCellsInBodies[newPosition]
-
-        insertIntoPriorityQueueForDistanceFinding(
-            priorityQueue,
-            (newPosition, newDistance)
-        )
-
-        visited.add(newPosition)
-
-    while priorityQueue:
-
-        position, distance = priorityQueue.popleft()
-
-        if position in targets:
-            
-            for position, _ in priorityQueue:
-                visited.remove(position)
-
-            return visited
-
-        x, y = position
-        
-        for xOffset, yOffset in DIRECTIONS:
-            newX, newY = x + xOffset, y + yOffset
-            if not (0 <= newX < state.width and 0 <= newY < state.height):
-                continue
-            newPosition = (newX, newY)
-            if newPosition in state.walls or newPosition in visited:
-                continue
-
-            newDistance = distance + 1
-
-            if newPosition in minimumDistancesToCellsInBodies:
-                minimumDistance = minimumDistancesToCellsInBodies[newPosition]
-                if newDistance < minimumDistance:
-                    newDistance = minimumDistance
-
-            insertIntoPriorityQueueForDistanceFinding(
-                priorityQueue,
-                (newPosition, newDistance)
-            )
-
-            visited.add(newPosition)
-
-    return None
-
-
-def getMinimumDistancesToCellsInBodies(state):
-
-    x, y = state.snake.head
-
-    minimumDistancesToCellsInBodies = {}
-
-    minimumDistanceToHead = len(state.snake.body)
-
-    if minimumDistanceToHead % 2 != 0:
-        minimumDistanceToHead += 1
-
-    for index, position in enumerate(state.snake.body):
-        minimumDistancesToCellsInBodies[position] = minimumDistanceToHead - index
-
-    for enemy in state.enemies:
-        if enemy.isAlive:
-
-            minimumDistanceToHead = len(enemy.body) + 1
-
-            enemyX, enemyY = enemy.head
-            if minimumDistanceToHead % 2 != (abs(x - enemyX) + abs(y - enemyY)) % 2:
-                minimumDistanceToHead += 1
-
-            for index, position in enumerate(enemy.body):
-                minimumDistancesToCellsInBodies[position] = minimumDistanceToHead - index
-
-    return minimumDistancesToCellsInBodies
 
 
 def insertIntoPriorityQueueForFoodFinding(priorityQueue, newElement):
@@ -437,65 +357,7 @@ def moveAnySnake(state, snake, turn):
         if snake is state.snake:
             state.score += 1
 
-        spawnWall(state)
-
     return True
-
-
-def spawnWall(state):
-    
-    if len(state.walls) >= state.width * state.height * 0.25:
-        return
-
-    tail = state.snake.body_set
-    minimumDistancesToCellsInBodies = getMinimumDistancesToCellsInBodies(state)
-    
-    candidates = getCellsVisitedBeforeNearestTarget(state, tail, minimumDistancesToCellsInBodies = minimumDistancesToCellsInBodies)
-    
-    candidates -= state.food
-
-    for position in state.snake.body:
-        candidates.discard(position)
-
-    for enemy in state.enemies:
-        if enemy.isAlive:
-            for position in enemy.body:
-                candidates.discard(position)
-
-    for x in range(state.width):
-        for y in range(state.height):
-            position = (x, y)
-            if position in state.walls:
-                continue
-
-            nonWallNeighbours = set()
-
-            for xOffset, yOffset in DIRECTIONS:
-                neighbourX, neighbourY = x + xOffset, y + yOffset
-                if not (0 <= neighbourX < state.width and 0 <= neighbourY < state.height):
-                    continue
-                neighbour = (neighbourX, neighbourY)
-                if neighbour in state.walls:
-                    continue
-                
-                nonWallNeighbours.add(neighbour)
-
-            if len(nonWallNeighbours) <= 2:
-                candidates -= nonWallNeighbours
-
-    if not candidates:
-        return
-
-    _candidate = None
-    _distanceToTail = None
-    for candidate in candidates:
-        state.walls.add(candidate)
-        __distanceToTail = getDistanceToNearestTarget(state, tail, minimumDistancesToCellsInBodies = minimumDistancesToCellsInBodies)
-        if not _candidate or __distanceToTail > _distanceToTail:
-            _candidate = candidate
-            _distanceToTail = __distanceToTail
-        state.walls.remove(candidate)
-    state.walls.add(candidate)
 
 
 def getEnemyGameState(state, enemyIndex):
