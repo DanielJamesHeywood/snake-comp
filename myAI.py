@@ -398,11 +398,11 @@ def spawnWall(state):
 
     _candidate = None
     _distanceToTail = None
-    _body = state.snake.body_set
+    tail = state.snake.body_set
     minimumDistancesToCellsInBodies = getMinimumDistancesToCellsInBodies(state)
     for candidate in candidates:
         state.walls.add(candidate)
-        __distanceToTail = getDistanceToNearestTarget(state, _body, minimumDistancesToCellsInBodies = minimumDistancesToCellsInBodies)
+        __distanceToTail = getDistanceToNearestTarget(state, tail, minimumDistancesToCellsInBodies = minimumDistancesToCellsInBodies)
         if not _candidate or __distanceToTail > _distanceToTail:
             _candidate = candidate
             _distanceToTail = __distanceToTail
