@@ -494,24 +494,6 @@ def spawnWall(state):
     state.walls.add(candidate)
 
 
-def getEmptyCells(state):
-
-    cells = {(x, y) for x in range(state.width) for y in range(state.height)}
-
-    cells -= state.walls
-    cells -= state.food
-
-    for position in state.snake.body:
-        cells.discard(position)
-
-    for enemy in state.enemies:
-        if enemy.isAlive:
-            for position in enemy.body:
-                cells.discard(position)
-
-    return cells
-
-
 def getEnemyGameState(state, enemyIndex):
 
     enemy = state.enemies[enemyIndex]
