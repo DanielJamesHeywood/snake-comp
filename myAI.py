@@ -52,7 +52,7 @@ def myAI(state: GameState) -> Turn:
         any(turnCounts[turn] for turn in Turn if turn != turnWhereTailIsNotReachable)
         if turnWhereTailIsNotReachable else
         len([turnCount for turnCount in turnCounts.values() if turnCount != 0]) >= 2
-    ) and stateCount <= 768:
+    ) and len(priorityQueue) <= 256:
 
         state, turn, distance, _ = priorityQueue.popleft()
 
@@ -101,7 +101,7 @@ def tailIsReachable(state):
 
     stateCount = 1
 
-    while priorityQueue and stateCount <= 64:
+    while priorityQueue and len(priorityQueue) <= 32:
 
         state, tail, _ = priorityQueue.popleft()
 
