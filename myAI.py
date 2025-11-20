@@ -92,7 +92,7 @@ def tailIsReachable(state):
     priorityQueue = deque()
     insertIntoPriorityQueueForTailFinding(
         priorityQueue,
-        (state, state.snake.body, getDistanceToNearestTarget(state, set(state.snake.body)))
+        (state, state.snake.body, getDistanceToNearestTarget(state, state.snake.body_set))
     )
 
     stateCount = 1
@@ -280,7 +280,7 @@ def copyGameState(state):
         snake = copySnake(state.snake),
         enemies = [copySnake(enemy) for enemy in state.enemies],
         food = state.food.copy(),
-        walls = state.walls,
+        walls = state.walls.copy(),
         score = state.score
     )
 
