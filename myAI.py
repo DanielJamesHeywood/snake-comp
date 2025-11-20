@@ -133,27 +133,7 @@ def getDistanceToNearestTarget(state, targets):
 
     x, y = state.snake.head
 
-    minimumDistancesToCellsInBodies = {}
-
-    minimumDistanceToHead = len(state.snake.body)
-
-    if minimumDistanceToHead % 2 != 0:
-        minimumDistanceToHead += 1
-
-    for index, position in enumerate(state.snake.body):
-        minimumDistancesToCellsInBodies[position] = minimumDistanceToHead - index
-
-    for enemy in state.enemies:
-        if enemy.isAlive:
-
-            minimumDistanceToHead = len(enemy.body) + 1
-
-            enemyX, enemyY = enemy.head
-            if minimumDistanceToHead % 2 != (abs(x - enemyX) + abs(y - enemyY)) % 2:
-                minimumDistanceToHead += 1
-
-            for index, position in enumerate(enemy.body):
-                minimumDistancesToCellsInBodies[position] = minimumDistanceToHead - index
+    minimumDistancesToCellsInBodies = getMinimumDistancesToCellsInBodies(state)
 
     priorityQueue = deque()
     insertIntoPriorityQueueForDistanceFinding(
@@ -216,6 +196,35 @@ def getDistanceToNearestTarget(state, targets):
             visited.add(newPosition)
 
     return None
+
+
+def getMinimumDistancesToCellsInBodies(state):
+
+    x, y = state.snake.head
+
+    minimumDistancesToCellsInBodies = {}
+
+    minimumDistanceToHead = len(state.snake.body)
+
+    if minimumDistanceToHead % 2 != 0:
+        minimumDistanceToHead += 1
+
+    for index, position in enumerate(state.snake.body):
+        minimumDistancesToCellsInBodies[position] = minimumDistanceToHead - index
+
+    for enemy in state.enemies:
+        if enemy.isAlive:
+
+            minimumDistanceToHead = len(enemy.body) + 1
+
+            enemyX, enemyY = enemy.head
+            if minimumDistanceToHead % 2 != (abs(x - enemyX) + abs(y - enemyY)) % 2:
+                minimumDistanceToHead += 1
+
+            for index, position in enumerate(enemy.body):
+                minimumDistancesToCellsInBodies[position] = minimumDistanceToHead - index
+
+    return minimumDistancesToCellsInBodies
 
 
 def insertIntoPriorityQueueForFoodFinding(priorityQueue, newElement):
