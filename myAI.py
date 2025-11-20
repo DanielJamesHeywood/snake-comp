@@ -11,7 +11,7 @@ def myAI(state: GameState) -> Turn:
 
     turnCounts = {turn: 0 for turn in Turn}
 
-    turnWhereTailIsReachable = None
+    turnWhereTailIsNotReachable = None
 
     stateCount = 0
 
@@ -39,14 +39,18 @@ def myAI(state: GameState) -> Turn:
             return turn
             
         else:
-            turnWhereTailIsReachable = turn
+            turnWhereTailIsNotReachable = turn
 
     if not any(turnCounts.values()):
+
+        if turnWhereTailIsNotReachable:
+            return turnWhereTailIsNotReachable
+
         return Turn.STRAIGHT
 
     while (
-        any(turnCounts[turn] for turn in Turn if turn != turnWhereTailIsReachable)
-        if turnWhereTailIsReachable else
+        any(turnCounts[turn] for turn in Turn if turn != turnWhereTailIsNotReachable)
+        if turnWhereTailIsNotReachable else
         len([turnCount for turnCount in turnCounts.values() if turnCount != 0]) >= 2
     ) and stateCount <= 256:
 
@@ -78,10 +82,10 @@ def myAI(state: GameState) -> Turn:
                 return turn
             
             else:
-                turnWhereTailIsReachable = turn
+                turnWhereTailIsNotReachable = turn
 
-    if turnWhereTailIsReachable:
-        return turnWhereTailIsReachable
+    if turnWhereTailIsNotReachable:
+        return turnWhereTailIsNotReachable
 
     _, turn, _, _ = priorityQueue.popleft()
     return turn
