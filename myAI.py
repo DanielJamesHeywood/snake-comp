@@ -199,6 +199,76 @@ def getDistanceToNearestTarget(state, targets, minimumDistancesToCellsInBodies =
     return None
 
 
+def f(state, targets, minimumDistancesToCellsInBodies = None):
+
+    x, y = state.snake.head
+
+    if not minimumDistancesToCellsInBodies:
+        minimumDistancesToCellsInBodies = getMinimumDistancesToCellsInBodies(state)
+
+    priorityQueue = deque()
+    insertIntoPriorityQueueForDistanceFinding(
+        priorityQueue,
+        (state.snake.head, minimumDistancesToCellsInBodies[state.snake.head])
+    )
+
+    visited = {state.snake.head}
+
+    for turn in Turn:
+        xOffset, yOffset = DIRECTIONS[(state.snake.direction + turn.value) % 4]
+        newX, newY = x + xOffset, y + yOffset
+        if not (0 <= newX < state.width and 0 <= newY < state.height):
+            continue
+        newPosition = (newX, newY)
+        if newPosition in state.walls:
+            continue
+    
+        newDistance = 1
+
+        if newPosition in minimumDistancesToCellsInBodies:
+            newDistance = minimumDistancesToCellsInBodies[newPosition]
+
+        insertIntoPriorityQueueForDistanceFinding(
+            priorityQueue,
+            (newPosition, newDistance)
+        )
+
+        visited.add(newPosition)
+
+    while priorityQueue:
+
+        position, distance = priorityQueue.popleft()
+
+        if position in targets:
+            return visited
+
+        x, y = position
+        
+        for xOffset, yOffset in DIRECTIONS:
+            newX, newY = x + xOffset, y + yOffset
+            if not (0 <= newX < state.width and 0 <= newY < state.height):
+                continue
+            newPosition = (newX, newY)
+            if newPosition in state.walls or newPosition in visited:
+                continue
+
+            newDistance = distance + 1
+
+            if newPosition in minimumDistancesToCellsInBodies:
+                minimumDistance = minimumDistancesToCellsInBodies[newPosition]
+                if newDistance < minimumDistance:
+                    newDistance = minimumDistance
+
+            insertIntoPriorityQueueForDistanceFinding(
+                priorityQueue,
+                (newPosition, newDistance)
+            )
+
+            visited.add(newPosition)
+
+    return visited
+
+
 def getMinimumDistancesToCellsInBodies(state):
 
     x, y = state.snake.head
@@ -373,7 +443,10 @@ def spawnWall(state):
     if len(state.walls) >= state.width * state.height * 0.25:
         return
 
-    candidates = getEmptyCells(state)
+    tail = state.snake.body_set
+    minimumDistancesToCellsInBodies = getMinimumDistancesToCellsInBodies(state)
+    
+    candidates = f(state, tail, minimumDistancesToCellsInBodies = minimumDistancesToCellsInBodies)
 
     for x in range(state.width):
         for y in range(state.height):
@@ -396,10 +469,11 @@ def spawnWall(state):
             if len(nonWallNeighbours) <= 2:
                 candidates -= nonWallNeighbours
 
+    if not candidates:
+        return
+
     _candidate = None
     _distanceToTail = None
-    tail = state.snake.body_set
-    minimumDistancesToCellsInBodies = getMinimumDistancesToCellsInBodies(state)
     for candidate in candidates:
         state.walls.add(candidate)
         __distanceToTail = getDistanceToNearestTarget(state, tail, minimumDistancesToCellsInBodies = minimumDistancesToCellsInBodies)
