@@ -92,7 +92,7 @@ def tailIsReachable(state):
     priorityQueue = deque()
     insertIntoPriorityQueueForTailFinding(
         priorityQueue,
-        (state, state.snake.body, getDistanceToNearestTarget(state, set(state.snake.body)))
+        (state, state.snake.body, getDistanceToNearestTarget(state, state.snake.body_set))
     )
 
     stateCount = 1
@@ -398,7 +398,7 @@ def spawnWall(state):
 
     _candidate = None
     _distanceToTail = None
-    _body = set(state.snake.body)
+    _body = state.snake.body_set
     minimumDistancesToCellsInBodies = getMinimumDistancesToCellsInBodies(state)
     for candidate in candidates:
         state.walls.add(candidate)
