@@ -1,4 +1,3 @@
-import random
 from collections import deque
 from snake.logic import GameState, Turn, Snake, Direction
 
@@ -7,14 +6,14 @@ from examples.smartAI import smartAI as enemyAI
 
 
 def myAI(state: GameState) -> Turn:
-    
-    score = state.score
 
     priorityQueue = deque()
 
     turnCounts = {turn: 0 for turn in Turn}
 
-    turnWhereTailIsReachable = None
+    turnWhereTailIsNotReachable = None
+
+    stateCount = 0
 
     for turn in Turn:
 
@@ -22,7 +21,7 @@ def myAI(state: GameState) -> Turn:
         if not moveSnake(newState, turn):
             continue
 
-        if newState.score <= score:
+        if newState.score <= state.score:
 
             newDistanceToNearestFood = getDistanceToNearestFood(newState)
             if newDistanceToNearestFood:
@@ -33,54 +32,60 @@ def myAI(state: GameState) -> Turn:
                 )
 
                 turnCounts[turn] += 1
+                
+                stateCount += 1
 
         elif tailIsReachable(newState):
             return turn
             
         else:
-            turnWhereTailIsReachable = turn
+            turnWhereTailIsNotReachable = turn
 
     if not any(turnCounts.values()):
 
-        if turnWhereTailIsReachable:
-            return turnWhereTailIsReachable
-            
+        if turnWhereTailIsNotReachable:
+            return turnWhereTailIsNotReachable
+
         return Turn.STRAIGHT
 
-    while (any(turnCounts[turn] for turn in Turn if turn != turnWhereTailIsReachable) if turnWhereTailIsReachable else len(list(filter(None, turnCounts.values()))) >= 2) and len(priorityQueue) <= 256:
+    while (
+        any(turnCounts[turn] for turn in Turn if turn != turnWhereTailIsNotReachable)
+        if turnWhereTailIsNotReachable else
+        len([turnCount for turnCount in turnCounts.values() if turnCount != 0]) >= 2
+    ) and stateCount <= 1024:
 
         state, turn, distance, _ = priorityQueue.popleft()
 
         turnCounts[turn] -= 1
 
-        newDistance = distance + 1
-
         for newTurn in Turn:
 
-            newState = state if newTurn == Turn.RIGHT else copyGameState(state)
+            newState = copyGameState(state)
             if not moveSnake(newState, newTurn):
                 continue
 
-            if newState.score <= score:
+            if newState.score <= state.score:
 
                 newDistanceToNearestFood = getDistanceToNearestFood(newState)
                 if newDistanceToNearestFood:
 
                     insertIntoPriorityQueueForFoodFinding(
                         priorityQueue,
-                        (newState, turn, newDistance, newDistanceToNearestFood)
+                        (newState, turn, distance + 1, newDistanceToNearestFood)
                     )
 
                     turnCounts[turn] += 1
+                    
+                    stateCount += 1
 
             elif tailIsReachable(newState):
                 return turn
             
             else:
-                turnWhereTailIsReachable = turn
+                turnWhereTailIsNotReachable = turn
 
-    if turnWhereTailIsReachable:
-        return turnWhereTailIsReachable
+    if turnWhereTailIsNotReachable:
+        return turnWhereTailIsNotReachable
 
     _, turn, _, _ = priorityQueue.popleft()
     return turn
@@ -91,35 +96,35 @@ def tailIsReachable(state):
     priorityQueue = deque()
     insertIntoPriorityQueueForTailFinding(
         priorityQueue,
-        (state, deque(), getDistanceToNearestTarget(state, set(state.snake.body)))
+        (state, state.snake.body, getDistanceToNearestTarget(state, state.snake.body_set))
     )
 
-    while priorityQueue and len(priorityQueue) <= 32:
+    stateCount = 1
+
+    while priorityQueue and stateCount <= 64:
 
         state, tail, _ = priorityQueue.popleft()
 
         for turn in Turn:
 
-            oldTail = state.snake.body[-1]
-
-            newState = state if turn == Turn.RIGHT else copyGameState(state)
+            newState = copyGameState(state)
             if not moveSnake(newState, turn):
                 continue
 
-            newTail = tail
-            if oldTail not in newTail:
-                newTail = newTail if turn == Turn.RIGHT else newTail.copy()
-                newTail.appendleft(oldTail)
+            newTail = tail.copy()
+            newTail.appendleft(state.snake.head)
 
             if newState.snake.head in newTail:
                 return True
 
-            newDistanceToHead = getDistanceToNearestTarget(newState, set(newState.snake.body + newTail))
+            newDistanceToTail = getDistanceToNearestTarget(newState, set(newTail))
 
             insertIntoPriorityQueueForTailFinding(
                 priorityQueue,
-                (newState, newTail, newDistanceToHead)
+                (newState, newTail, newDistanceToTail)
             )
+            
+            stateCount += 1
 
     return False
 
@@ -277,11 +282,9 @@ def copyGameState(state):
         width = state.width,
         height = state.height,
         snake = copySnake(state.snake),
-        enemies = [
-            copySnake(enemy) for enemy in state.enemies
-        ],
-        food = state.food,
-        walls = state.walls,
+        enemies = [copySnake(enemy) for enemy in state.enemies],
+        food = state.food.copy(),
+        walls = state.walls.copy(),
         score = state.score
     )
 
@@ -316,8 +319,6 @@ def moveEnemy(state, enemyIndex, turn):
 
     if not enemy.isAlive:
 
-        state.food = state.food.copy()
-
         for position in enemy.body:
             state.food.add(position)
 
@@ -341,7 +342,7 @@ def moveAnySnake(state, snake, turn):
         return False
 
     for enemy in state.enemies:
-        if enemy is not snake and enemy.isAlive and nextHead in enemy.body:
+        if enemy.isAlive and enemy is not snake and nextHead in enemy.body:
             return False
 
     willEat = nextHead in state.food
@@ -349,8 +350,6 @@ def moveAnySnake(state, snake, turn):
     snake.move(turn, grow = willEat)
 
     if willEat:
-
-        state.food = state.food.copy()
 
         state.food.remove(nextHead)
 
@@ -369,9 +368,7 @@ def getEnemyGameState(state, enemyIndex):
         width = state.width,
         height = state.height,
         snake = enemy,
-        enemies = [state.snake] + [
-            otherEnemy for otherEnemy in state.enemies if otherEnemy is not enemy and otherEnemy.isAlive
-        ],
+        enemies = [state.snake] + [otherEnemy for otherEnemy in state.enemies if otherEnemy is not enemy and otherEnemy.isAlive],
         food = state.food,
         walls = state.walls,
         score = enemy.score
