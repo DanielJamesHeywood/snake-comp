@@ -5,7 +5,7 @@ from snake.logic import DIRECTIONS
 from examples.smartAI import smartAI as enemyAI
 
 
-def myAI(state: GameState) -> Turn: #1
+def myAI(state: GameState) -> Turn: #2
 
     priorityQueue = deque()
 
