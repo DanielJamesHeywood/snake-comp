@@ -104,7 +104,7 @@ def myAI(state: GameState) -> Turn:
         if not turn1 or (isTailIsReachable and not tailIsReachable1) or (isTailIsReachable == tailIsReachable1 and distanceToNearestFood1 > distanceToNearestFood):
             turn1 = turn
             distanceToNearestFood1 = distanceToNearestFood
-            tailIsReachable1 = tailIsReachable
+            tailIsReachable1 = isTailIsReachable
 
     return turn1
 
