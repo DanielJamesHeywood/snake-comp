@@ -87,8 +87,20 @@ def myAI(state: GameState) -> Turn:
     if turnWhereTailIsNotReachable:
         return turnWhereTailIsNotReachable
 
-    _, turn, _, _ = priorityQueue.popleft()
-    return turn
+    for turn, turnCount in turnCounts.items():
+        if turnCount == 0:
+            continue
+
+        newState = copyGameState(state)
+        moveSnake(newState, turn)
+
+        if tailIsReachable(newState):
+            return turn
+            
+        else:
+            turnWhereTailIsNotReachable = turn
+
+    return turnWhereTailIsNotReachable
 
 
 def tailIsReachable(state):
