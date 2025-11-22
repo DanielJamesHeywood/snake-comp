@@ -87,20 +87,26 @@ def myAI(state: GameState) -> Turn:
     if turnWhereTailIsNotReachable:
         return turnWhereTailIsNotReachable
 
+    turn1 = None
+    distanceToNearestFood1 = None
+    tailIsReachable1 = None
+
     for turn, turnCount in turnCounts.items():
         if turnCount == 0:
             continue
 
         newState = copyGameState(state)
         moveSnake(newState, turn)
+        
+        distanceToNearestFood = getDistanceToNearestFood(newState)
+        tailIsReachable = tailIsReachable(newState)
+        
+        if not turn1 or (tailIsReachable and not tailIsReachable1) or (tailIsReachable == tailIsReachable1 and distanceToNearestFood1 > distanceToNearestFood):
+            turn1 = turn
+            distanceToNearestFood1 = distanceToNearestFood
+            tailIsReachable1 = tailIsReachable
 
-        if tailIsReachable(newState):
-            return turn
-            
-        else:
-            turnWhereTailIsNotReachable = turn
-
-    return turnWhereTailIsNotReachable
+    return turn1
 
 
 def tailIsReachable(state):
