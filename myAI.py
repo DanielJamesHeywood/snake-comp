@@ -89,7 +89,6 @@ def myAI(state: GameState) -> Turn:
 
     turn1 = None
     distanceToNearestFood1 = None
-    tailIsReachable1 = None
 
     for turn, turnCount in turnCounts.items():
         if turnCount == 0:
@@ -99,12 +98,10 @@ def myAI(state: GameState) -> Turn:
         moveSnake(newState, turn)
         
         distanceToNearestFood = getDistanceToNearestFood(newState)
-        isTailIsReachable = tailIsReachable(newState)
         
-        if not turn1 or (isTailIsReachable and not tailIsReachable1) or (isTailIsReachable == tailIsReachable1 and distanceToNearestFood1 > distanceToNearestFood):
+        if not turn1 or distanceToNearestFood < distanceToNearestFood1:
             turn1 = turn
             distanceToNearestFood1 = distanceToNearestFood
-            tailIsReachable1 = isTailIsReachable
 
     return turn1
 
