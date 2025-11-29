@@ -68,7 +68,7 @@ def beam_search(
         candidates.sort(key=lambda n: n.score, reverse=True)
         beam = candidates[:beam_width]
 
-    if beam and beam[0].path and beam[0].score > -500:
+    if beam and beam[0].path:
         return beam[0].path[0]
     
     return None
