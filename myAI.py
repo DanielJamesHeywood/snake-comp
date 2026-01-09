@@ -4,12 +4,8 @@ from snake.logic import GameState, Turn, Snake, Direction
 from snake.logic import DIRECTIONS
 from examples.smartAI import smartAI as enemyAI
 
-from external_ai.beam_search import beam_search
-
 
 def myAI(state: GameState) -> Turn:
-    if len(state.enemies) == 0 and state.score < 110 and (result := beam_search(state)):
-        return result
 
     priorityQueue = deque()
 
